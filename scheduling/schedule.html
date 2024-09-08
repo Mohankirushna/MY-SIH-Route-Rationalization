@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Schedule</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: 50px auto; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bus Schedule</h1>
+        <label for="bus-id">Select Bus:</label>
+        <select id="bus-id">
+            <option value="1">Bus 1</option>
+            <option value="2">Bus 2</option>
+            <option value="3">Bus 3</option>
+            <option value="4">Bus 4</option>
+            <option value="5">Bus 5</option>
+            <option value="6">Bus 6</option>
+        </select>
+        <br><br>
+        <button onclick="getSchedule()">Get Schedule</button>
+
+        <div id="schedule-output">
+            <!-- Schedule will be shown here -->
+        </div>
+        <div class="results"></div>
+            <h2>Predicted Route Details</h2>
+            <p><strong>Distance:</strong> <span id="distance"></span></p>
+            <p><strong>Actual duration:</strong><span id="actual-duration"></span></p>
+            <p><strong>Estimated Duration:</strong> <span id="estimated-duration"></span></p>
+            <p><strong>Predicted Delay:</strong> <span id="predicted-delay"></span></p>
+        </div>
+    </div>
+
+    <script>
+        function getSchedule() {
+            const busId = document.getElementById('bus-id').value;
+            
+            // Fetch the schedule from the server
+            fetch(`http://127.0.0.1:5000/get_schedule?bus_id=${busId}`)
+                .then(response => response.json())
+                .then(data => {
+                    displaySchedule(data);
+                    getPredictedDelay();
+                })
+                .catch(error => {
+                    console.error('Error fetching schedule:', error);
+                });
+        }
+
+        function displaySchedule(schedule) {
+            const outputDiv = document.getElementById('schedule-output');
+            outputDiv.innerHTML = ''; // Clear previous schedule
+
+            if (schedule.length === 0) {
+                outputDiv.innerHTML = '<p>No schedule available for this bus.</p>';
+                return;
+            }
+
+            // Create a table to display the schedule
+            const table = document.createElement('table');
+            const headerRow = table.insertRow();
+            headerRow.innerHTML = `
+                <th>BusID</th>
+                <th>Departure Location</th>
+                <th>Departure Time</th>
+                <th>Destination</th>
+                <th>Destination Time</th>
+            `;
+
+            schedule.forEach(row => {
+                const tableRow = table.insertRow();
+                tableRow.innerHTML = `
+                    <td>${row.busid}</td>
+                    <td>${row.departure_location}</td>
+                    <td>${row.departure_time}</td>
+                    <td>${row.destination}</td>
+                    <td>${row.destination_time}</td>
+                `;
+            });
+            outputDiv.appendChild(table);
+        }
+        function getPredictedDelay() {
+            const currentTime = new Date();
+            const hour = currentTime.getHours();
+            const dayOfWeek = currentTime.getDay();
+
+            fetch('http://127.0.0.1:5000/api/get_predicted_delay', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                hour: hour,
+                day_of_week: dayOfWeek,
+                distance_meters: 26600,
+                duration_seconds: 3600,
+                //duration_in_traffic_seconds: 2850
+            })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('distance').textContent = data.distance;
+                document.getElementById('actual-duration').textContent = data.actual_duration;
+                document.getElementById('estimated-duration').textContent = data.estimated_duration;
+                document.getElementById('predicted-delay').textContent = data.predicted_delay;
+            })
+            .catch(error => {
+                console.error('Error fetching predicted delay:', error);
+            });
+        }
+
+
+    //     function getPredictedDelay() {
+    //         const currentTime = new Date();
+    //         const hour = currentTime.getHours();
+    //         const dayOfWeek = currentTime.getDay();
+
+    //         fetch('http://127.0.0.1:5000/api/get_predicted_delay',{
+    //             method: 'POST',
+    //             headers: {
+    //             'Content-Type': 'application/json'
+    //         },
+    //         body: JSON.stringify({
+    //             hour: hour,
+    //             day_of_week: dayOfWeek,
+    //             distance_meters: 12000,              // Update key names
+    //             duration_seconds: 2500,              // Update key names
+    //             duration_in_traffic_seconds: 2850 
+    //         })
+    // })
+    //             .then(response => response.json())
+    //             .then(data => {
+    //                 document.getElementById('distance').textContent = data.distance;
+    //                 document.getElementById('estimated_duration').textContent = data.estimated_duration;
+    //                 document.getElementById('predicted_delay').textContent = data.predicted_delay;
+    //             })
+    //             .catch(error => {
+    //                 console.error('Error fetching predicted delay:', error);
+    //             });
+    //         }
+    </script>
+</body>
+</html>
