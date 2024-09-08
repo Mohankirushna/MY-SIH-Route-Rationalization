@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Ticket Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .success-message {
+            color: green;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Buy Bus Ticket</h2>
+    
+    <label for="starting-point">Starting Point:</label>
+    <select id="starting-point">
+        <option value="thambaram">Thambaram</option>
+        <option value="Irumbuliyur">Irumbuliyur</option>
+        <option value="Peerkankaranai">Peerkankaranai</option>
+        <option value="Perungalathur">Perungalathur</option>
+        <option value="Police Check Post">Police Check Post</option>
+        <option value="Vandalur Railway Station Gate">Vandalur Railway Station Gate</option>
+        <option value="vandalur">Vandalur</option>
+        <!-- Add more stops as needed -->
+    </select>
+
+    <label for="destination">Destination:</label>
+    <select id="destination">
+        <option value="thambaram">Thambaram</option>
+        <option value="Irumbuliyur">Irumbuliyur</option>
+        <option value="Peerkankaranai">Peerkankaranai</option>
+        <option value="Perungalathur">Perungalathur</option>
+        <option value="Police Check Post">Police Check Post</option>
+        <option value="Vandalur Railway Station Gate">Vandalur Railway Station Gate</option>
+        <option value="vandalur">Vandalur</option>
+        <!-- Add more stops as needed -->
+    </select>
+
+    <label for="ticket-count">Number of Tickets:</label>
+    <input type="number" id="ticket-count" min="1" value="1">
+
+    <button id="pay-button">Pay</button>
+
+    <p class="success-message" id="success-message">Payment Successful!</p>
+</div>
+
+<script>
+    document.getElementById('pay-button').addEventListener('click', function () {
+        // Retrieve selected data
+        var startingPoint = document.getElementById('starting-point').value;
+        var destination = document.getElementById('destination').value;
+        var ticketCount = parseInt(document.getElementById('ticket-count').value);
+
+        // Check for invalid input
+        if (ticketCount <= 0) {
+            alert("Please enter a valid number of tickets.");
+            return;
+        }
+
+        // Simulate a successful payment
+        document.getElementById('success-message').style.display = 'block';
+
+        // Send ticket data to the server via Fetch API
+        fetch('http://127.0.0.1:5000/book-ticket', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                startingPoint: startingPoint,
+                destination: destination,
+                ticketCount: ticketCount
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Ticket booked successfully.');
+            } else {
+                console.error('Error booking ticket:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+</script>
+
+</body>
+</html>
